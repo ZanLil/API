@@ -5,6 +5,7 @@ class PerevalAdded(models.Model):
     """Модель с перевалами."""
 
     class Status(models.TextChoices):
+        """Вариации для поля status."""
         NEW = 'new', 'new'
         PENDING = 'pending', 'pending'
         ACCEPTED = 'accepted', 'accepted'
@@ -14,6 +15,7 @@ class PerevalAdded(models.Model):
     raw_data = models.JSONField()
     images = models.JSONField()
     status = models.CharField(max_length=8, choices=Status.choices, default=Status.NEW)
+    user_email = models.EmailField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = 'pereval_added'

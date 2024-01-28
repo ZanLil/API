@@ -1,10 +1,75 @@
-from rest_framework import generics
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api.models import PerevalAdded
-from api.serializers import PerevalAddedSerializer
+from api.serializers import PerevalAddedSerializer, PerevalAddedAllFieldsSerializer, PerevalUpdateSerializer
 
 
-class SubmitDataView(generics.CreateAPIView):
-    """Класс-представления создания объекта pereval_added через API."""
-    queryset = PerevalAdded.objects.all()
-    serializer_class = PerevalAddedSerializer
+class SubmitDataView(APIView):
+    """
+    Класс-представление для создания объекта PerevalAdded и для получения записей,
+    которые принадлежат определенному email.
+    """
+
+    def get(self, request):
+        """Логика для обработки GET-запроса."""
+        user_email = request.query_params.get('user__email', None)
+        if user_email:
+            data = PerevalAdded.objects.filter(user_email=user_email).values()
+            return Response({'status': status.HTTP_200_OK, 'data': data}, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {'status': status.HTTP_400_BAD_REQUEST, 'message': 'Укажите параметр user__email в запросе.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        """Логика для обработки POST-запроса."""
+        user = self.request.user
+        if not user.is_anonymous:
+            user_email = user.email
+            data = request.data.copy()
+            data['user_email'] = user_email
+            serializer = PerevalAddedSerializer(data=data)
+        else:
+            serializer = PerevalAddedSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": status.HTTP_400_BAD_REQUEST, "message": serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubmitDataDetailView(APIView):
+    """Класс-представление для работы с конкретным объектом PerevalAdded."""
+
+    def get(self, request, id):
+        """Логика для обработки GET-запроса"""
+        try:
+            instance = PerevalAdded.objects.get(id=id)
+            serializer = PerevalAddedAllFieldsSerializer(instance)
+            return Response(serializer.data)
+        except PerevalAdded.DoesNotExist:
+            return Response({'status': status.HTTP_404_NOT_FOUND, "message": "Не найдено"},
+                            status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, id):
+        """Логика для обработки PATCH-запроса."""
+        try:
+            instance = PerevalAdded.objects.get(id=id)
+            if instance.status != PerevalAdded.Status.NEW:
+                return Response(
+                    {"state": 0, "message": "Невозможно редактировать записи с статусом отличным от 'new'."},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = PerevalUpdateSerializer(instance, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"state": 1}, status=status.HTTP_200_OK)
+            return Response({"state": 0, "message": serializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+        except PerevalAdded.DoesNotExist:
+            return Response({'status': status.HTTP_404_NOT_FOUND, "message": "Не найдено"},
+                            status=status.HTTP_404_NOT_FOUND)
