@@ -1,8 +1,10 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework import generics
+
+from api.models import PerevalAdded
+from api.serializers import PerevalAddedSerializer
 
 
-class SubmitDataView(APIView):
-
-    def post(self, request):
-        return Response({'status': 200})
+class SubmitDataView(generics.CreateAPIView):
+    """Класс-представления создания объекта pereval_added через API."""
+    queryset = PerevalAdded.objects.all()
+    serializer_class = PerevalAddedSerializer
