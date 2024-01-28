@@ -8,10 +8,10 @@ class SubmitDataTests(APITestCase):
     """Класс для тестирования API."""
 
     def setUp(self):
+        """Начальная конфигурация"""
         self.user = User.objects.create_user(username='testuser', password='testpassword', email='user@mail.ru')
         self.url_submit_data = '/api/v1/submit-data/'
-        self.id = 1
-        self.url_submit_data_detail = '/api/v1/submit-data/{}/'.format(self.id)
+        self.url_submit_data_detail = '/api/v1/submit-data/{}/'.format(1)
 
     def test_submit_data_create_anonymous_user(self):
         data = {
