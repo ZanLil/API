@@ -48,8 +48,8 @@ class SubmitDataView(APIView):
     )
     def post(self, request):
         """Логика для обработки POST-запроса."""
-        user = self.request.user
-        if not user.is_anonymous:
+        user = request.user
+        if user.is_authenticated:
             user_email = user.email
             data = request.data.copy()
             data['user_email'] = user_email
