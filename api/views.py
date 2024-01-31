@@ -27,7 +27,7 @@ class SubmitDataView(APIView):
         """Логика для обработки GET-запроса."""
         user_email = request.query_params.get('user__email', None)
         if user_email:
-            data = PerevalAdded.objects.filter(user_email=user_email).values()
+            data = PerevalAdded.objects.filter(raw_data__user__email=user_email).values()
             return Response({'status': status.HTTP_200_OK, 'data': data}, status=status.HTTP_200_OK)
         else:
             return Response(
@@ -48,21 +48,12 @@ class SubmitDataView(APIView):
     )
     def post(self, request):
         """Логика для обработки POST-запроса."""
-        user = request.user
-        if user.is_authenticated:
-            user_email = user.email
-            data = request.data.copy()
-            data['user_email'] = user_email
-            serializer = PerevalAddedSerializer(data=data)
-        else:
-            serializer = PerevalAddedSerializer(data=request.data)
-
+        serializer = PerevalAddedSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'status': status.HTTP_200_OK}, status=status.HTTP_200_OK)
-        else:
-            return Response({'status': status.HTTP_400_BAD_REQUEST, 'message': serializer.errors},
-                            status=status.HTTP_400_BAD_REQUEST)
+            obj = serializer.save()
+            return Response({'status': status.HTTP_200_OK, 'id': obj.id}, status=status.HTTP_200_OK)
+        return Response({'status': status.HTTP_400_BAD_REQUEST, 'message': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubmitDataDetailView(APIView):
@@ -100,7 +91,7 @@ class SubmitDataDetailView(APIView):
             instance = PerevalAdded.objects.get(id=id)
             if instance.status != PerevalAdded.Status.NEW:
                 return Response(
-                    {"state": 0, "message": "Невозможно редактировать записи с статусом отличным от 'new'."},
+                    {"state": 0, "message": "Невозможно редактировать записи со статусом отличным от 'new'."},
                     status=status.HTTP_400_BAD_REQUEST)
 
             serializer = PerevalUpdateSerializer(instance, data=request.data, partial=True)
@@ -108,7 +99,8 @@ class SubmitDataDetailView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response({"state": 1}, status=status.HTTP_200_OK)
-            return Response({"state": 0, "message": serializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'state': 0, 'message': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
         except PerevalAdded.DoesNotExist:
-            return Response({'status': status.HTTP_404_NOT_FOUND, "message": "Не найдено"},
+            return Response({'state': 0, "message": "Не найдено"},
                             status=status.HTTP_404_NOT_FOUND)
