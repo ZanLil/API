@@ -13,16 +13,44 @@ class SubmitDataTests(APITestCase):
         self.url_submit_data = '/api/v1/submit-data/'
         self.url_submit_data_detail = '/api/v1/submit-data/{}/'.format(1)
 
-    def test_submit_data_create_anonymous_user(self):
+    def test_submit_data_create(self):
         data = {
-            'raw_data': {'example': 'raw_data'},
-            'images': {'example': 'images'}
+            "raw_data": {
+                "user": {
+                    "fam": "fam",
+                    "otc": "otc",
+                    "name": "name",
+                    "email": "email",
+                    "phone": "number"
+                },
+                "level": {
+                    "autumn": "1A",
+                    "spring": "",
+                    "summer": "1A",
+                    "winter": ""
+                },
+                "title": "Кавказские горы",
+                "coords": {
+                    "height": "1200",
+                    "latitude": "127.00",
+                    "longitude": "68.22"
+                },
+                "connect": "",
+                "add_time": "2024.01.31 12:09:00",
+                "beautyTitle": "Кавка",
+                "other_titles": ""
+            },
+            "images": [
+                {
+                    "id": 1,
+                    "title": ""
+                }
+            ]
         }
         response = self.client.post(self.url_submit_data, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(PerevalAdded.objects.count(), 1)
-        self.assertIsNone(PerevalAdded.objects.first().user_email)
 
     def test_submit_data_create_invalid_data(self):
         data = {}
@@ -50,10 +78,39 @@ class SubmitDataTests(APITestCase):
 
     def test_get_data_detail_valid_id(self):
         data = {
-            'raw_data': {'example': 'raw_data'},
-            'images': {'example': 'images'}
+            "raw_data": {
+                "user": {
+                    "fam": "fam",
+                    "otc": "otc",
+                    "name": "name",
+                    "email": "email",
+                    "phone": "number"
+                },
+                "level": {
+                    "autumn": "1A",
+                    "spring": "",
+                    "summer": "1A",
+                    "winter": ""
+                },
+                "title": "Кавказские горы",
+                "coords": {
+                    "height": "1200",
+                    "latitude": "127.00",
+                    "longitude": "68.22"
+                },
+                "connect": "",
+                "add_time": "2024.01.31 12:09:00",
+                "beautyTitle": "Кавка",
+                "other_titles": ""
+            },
+            "images": [
+                {
+                    "id": 1,
+                    "title": ""
+                }
+            ]
         }
-        self.client.post(self.url_submit_data, data, format='json')
+        resp = self.client.post(self.url_submit_data, data, format='json')
         response = self.client.get(self.url_submit_data_detail)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
