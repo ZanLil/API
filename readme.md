@@ -9,7 +9,7 @@ API доступен в интернете по адресу ```https://djangoap
 
 Задача API заключается в том, что через него будут производиться задачи в мобильном приложении такие, как создание
 записи, ее редактирование, а
-также получение конкретной записи по её id и изменение конкретной записи.
+также получение конкретной записи по её id и получение всех записей у которых есть определенный email.
 
 ## Стек технологий
 
@@ -84,7 +84,8 @@ Response:
 
 ```json
 {
-  "status": 200
+  "status": 200,
+  "id": 1
 }
 ```
 
@@ -114,17 +115,48 @@ Response:
 ```json
 {
   "id": 1,
-  "date_added": "2024-01-28T13:14:02.784357+05:00",
+  "date_added": "2024-01-31T17:12:54.001480+05:00",
   "raw_data": {
-    "title": "title"
+    "user": {
+      "fam": "Фамилия",
+      "otc": "Отчество",
+      "name": "Имя",
+      "email": "Адрес электронной почты",
+      "phone": "Номер телефона"
+    },
+    "level": {
+      "autumn": "1A",
+      "spring": "",
+      "summer": "1A",
+      "winter": ""
+    },
+    "title": "Название",
+    "coords": {
+      "height": "height",
+      "latitude": "latitude",
+      "longitude": "longitude"
+    },
+    "connect": "connect",
+    "add_time": "2024.01.31 12:09:00",
+    "beautyTitle": "beautyTitle",
+    "other_titles": "other_titles"
   },
   "images": [
     {
-      "id": 1
+      "id": 1,
+      "title": ""
     }
   ],
-  "status": "new",
-  "user_email": null
+  "status": "new"
+}
+```
+
+Bad response:
+
+```json
+{
+  "status": 404,
+  "message": "Не найдено"
 }
 ```
 
@@ -154,6 +186,15 @@ Response:
 
 ```json
 {
-  "status": 200
+  "state": 1
+}
+```
+
+Bad response:
+
+```json
+{
+  "state": 0,
+  "message": "Текст ошибки"
 }
 ```
